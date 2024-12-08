@@ -27,13 +27,54 @@ export default function QuestionModal({
 }: QuestionModalProps) {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
+  const [question, setQuestion] = useState<{
+    question: string;
+    answer: string;
+    explanation: string;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { updateScore, nextTeam } = useGameStore();
 
-  // Mock question data (replace with API call)
-  const question = {
-    question: "What is the Earth's largest continent?",
-    answer: 'Asia',
+  const resetState = () => {
+    setTimeLeft(30);
+    setIsAnswerRevealed(false);
+    setQuestion(null);
   };
+
+  useEffect(() => {
+    async function fetchQuestion() {
+      if (category && difficulty && open) {
+        setIsLoading(true);
+        resetState();
+        try {
+          const response = await fetch('/api/question', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              category: category.name,
+              difficulty,
+            }),
+          });
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          setTimeLeft(30);
+          setQuestion(data);
+        } catch (error) {
+          console.error('Error fetching question:', error);
+          setQuestion({
+            question: 'Failed to load question. Please try again.',
+            answer: 'N/A',
+            explanation: 'There was an error generating the question.',
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    }
+    fetchQuestion();
+  }, [category, difficulty, open]);
 
   useEffect(() => {
     if (open && timeLeft > 0) {
@@ -69,7 +110,7 @@ export default function QuestionModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 min-h-[300px]">
           <div className="relative">
             <div
               className="w-16 h-16 rounded-full border-4 border-gray-200 mx-auto mb-4"
@@ -87,32 +128,43 @@ export default function QuestionModal({
             </div>
           </div>
 
-          <p className="text-xl text-center">{question.question}</p>
-
-          {!isAnswerRevealed ? (
-            <Button
-              className="w-full"
-              onClick={() => setIsAnswerRevealed(true)}
-            >
-              Reveal Answer
-            </Button>
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
           ) : (
             <>
-              <p className="text-xl text-center font-bold">{question.answer}</p>
-              <div className="flex gap-4">
+              <p className="text-xl text-center">{question?.question}</p>
+
+              {!isAnswerRevealed ? (
                 <Button
-                  className="flex-1 bg-green-500 hover:bg-green-600"
-                  onClick={handleCorrect}
+                  className="w-full"
+                  onClick={() => setIsAnswerRevealed(true)}
                 >
-                  Correct
+                  Reveal Answer
                 </Button>
-                <Button
-                  className="flex-1 bg-red-500 hover:bg-red-600"
-                  onClick={handleIncorrect}
-                >
-                  Incorrect
-                </Button>
-              </div>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <p className="text-xl text-center font-bold">{question?.answer}</p>
+                    <p className="text-sm text-muted-foreground text-center">{question?.explanation}</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <Button
+                      className="flex-1 bg-green-500 hover:bg-green-600"
+                      onClick={handleCorrect}
+                    >
+                      Correct
+                    </Button>
+                    <Button
+                      className="flex-1 bg-red-500 hover:bg-red-600"
+                      onClick={handleIncorrect}
+                    >
+                      Incorrect
+                    </Button>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

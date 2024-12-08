@@ -12,14 +12,15 @@ export default function Scoreboard() {
       {teams.map((team, index) => (
         <div
           key={team.id}
-          className={`p-4 rounded-lg transition-all ${
+          className={`p-4 rounded-lg transition-all duration-300 ${
             index === activeTeamIndex
-              ? 'ring-2 ring-primary'
-              : 'ring-1 ring-gray-200'
+              ? 'ring-4 ring-offset-2 ring-offset-background scale-105'
+              : 'ring-1 ring-gray-200 hover:ring-2'
           }`}
           style={{ 
             backgroundColor: team.color,
-            color: getContrastColor(team.color)
+            color: getContrastColor(team.color),
+            boxShadow: index === activeTeamIndex ? `0 0 20px ${team.color}40` : 'none'
           }}
         >
           <div className="flex items-center justify-between">
