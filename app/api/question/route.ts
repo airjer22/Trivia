@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { generateQuestion } from '@/lib/claude';
+import { NextResponse } from "next/server";
+import { generateQuestion } from "@/lib/claude";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     
     if (!category || !difficulty) {
       return NextResponse.json(
-        { error: 'Category and difficulty are required' },
+        { error: "Category and difficulty are required" },
         { status: 400 }
       );
     }
@@ -18,16 +18,16 @@ export async function POST(request: Request) {
       const question = await generateQuestion(category, difficulty);
       return NextResponse.json(question);
     } catch (genError) {
-      console.error('Question generation error:', genError);
+      console.error("Question generation error:", genError);
       return NextResponse.json(
-        { error: 'Failed to generate question. Please try again.' },
+        { error: "Failed to generate question. Please try again." },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('API Error:', error);
+    console.error("API Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate question' },
+      { error: error instanceof Error ? error.message : "Failed to generate question" },
       { status: 500 }
     );
   }

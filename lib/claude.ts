@@ -13,7 +13,7 @@ export async function generateQuestion(category: string, difficulty: string) {
     });
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-haiku',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       messages: [{
         role: 'user',
