@@ -113,16 +113,22 @@ export default function QuestionModal({
         <div className="space-y-6 min-h-[300px]">
           <div className="relative">
             <div
-              className="w-16 h-16 rounded-full border-4 border-gray-200 mx-auto mb-4"
+              className={`w-32 h-32 rounded-full border-8 mx-auto mb-4 transition-all duration-300 ${
+                timeLeft <= 10 ? 'border-red-500 animate-pulse' : 'border-gray-200'
+              }`}
               style={{
-                background: `conic-gradient(#3b82f6 ${
+                background: `conic-gradient(${
+                  timeLeft <= 10 ? '#ef4444' : '#3b82f6'
+                } ${
                   (timeLeft / 30) * 360
                 }deg, transparent 0deg)`,
                 transform: timeLeft <= 10 ? 'scale(1.1)' : 'scale(1)',
                 transition: 'transform 0.2s',
               }}
             >
-              <div className="absolute inset-0 flex items-center justify-center text-xl font-bold">
+              <div className={`absolute inset-0 flex items-center justify-center text-4xl font-bold transition-colors ${
+                timeLeft <= 10 ? 'text-red-500' : ''
+              }`}>
                 {timeLeft}
               </div>
             </div>

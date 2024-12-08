@@ -8,11 +8,11 @@ export default function Scoreboard() {
   const { teams, activeTeamIndex, updateScore } = useGameStore();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="flex flex-wrap justify-center gap-4 max-w-7xl mx-auto">
       {teams.map((team, index) => (
         <div
           key={team.id}
-          className={`p-4 rounded-lg transition-all duration-300 ${
+          className={`p-4 rounded-lg transition-all duration-300 flex-1 min-w-[250px] max-w-[300px] ${
             index === activeTeamIndex
               ? 'ring-4 ring-offset-2 ring-offset-background scale-105'
               : 'ring-1 ring-gray-200 hover:ring-2'
@@ -24,7 +24,7 @@ export default function Scoreboard() {
           }}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg">{team.name}</h3>
+            <h3 className="font-semibold text-lg truncate mr-2">{team.name}</h3>
             <div className="flex items-center space-x-2">
               <Button
                 variant="secondary"
