@@ -8,9 +8,9 @@ import QuestionModal from './QuestionModal';
 import DifficultyModal from './DifficultyModal';
 import { Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { PageTitle } from '@/components/layout/PageTitle';
+import { Home, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import WinnerDisplay from './WinnerDisplay';
 
 export default function GameBoard() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -19,7 +19,10 @@ export default function GameBoard() {
   );
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [isDifficultyModalOpen, setIsDifficultyModalOpen] = useState(false);
-  const resetGame = useGameStore((state) => state.resetGame);
+  const { teams, winningScore, resetGame } = useGameStore();
+  const { theme, setTheme } = useTheme();
+
+  const winner = teams.find((team) => team.score >= winningScore);
 
   const handleCategorySelect = (category: Category) => {
     setSelectedCategory(category);
@@ -44,10 +47,18 @@ export default function GameBoard() {
           <Home className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">Return to home</span>
         </Button>
-        <ThemeToggle />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          className="rounded-full"
+        >
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
       </div>
 
-      <PageTitle />
       <Scoreboard />
       <CategoryGrid onCategorySelect={handleCategorySelect} />
 
@@ -63,6 +74,13 @@ export default function GameBoard() {
         category={selectedCategory}
         difficulty={selectedDifficulty}
       />
+      
+      {winner && (
+        <WinnerDisplay
+          winner={winner}
+          onRestart={resetGame}
+        />
+      )}
     </div>
   );
 }
