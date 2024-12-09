@@ -33,7 +33,8 @@ export default function QuestionModal({
     explanation: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { updateScore, nextTeam } = useGameStore();
+  const [retryCount, setRetryCount] = useState(0);
+  const { updateScore, nextTeam, addUsedQuestion, isQuestionUsed } = useGameStore();
 
   const resetState = () => {
     setTimeLeft(30);
@@ -59,8 +60,25 @@ export default function QuestionModal({
           if (data.error) {
             throw new Error(data.error);
           }
+
+          // Check if question is already used
+          if (isQuestionUsed(category.name, difficulty, data.question)) {
+            // If we've tried too many times, use the question anyway to prevent infinite loops
+            if (retryCount >= 5) {
+              setQuestion(data);
+              setRetryCount(0);
+            } else {
+              setRetryCount(prev => prev + 1);
+              // Retry fetching a new question
+              fetchQuestion();
+              return;
+            }
+          } else {
+            setQuestion(data);
+            setRetryCount(0);
+          }
+          
           setTimeLeft(30);
-          setQuestion(data);
         } catch (error) {
           console.error('Error fetching question:', error);
           setQuestion({
@@ -74,7 +92,7 @@ export default function QuestionModal({
       }
     }
     fetchQuestion();
-  }, [category, difficulty, open]);
+  }, [category, difficulty, open, isQuestionUsed, retryCount]);
 
   useEffect(() => {
     if (open && timeLeft > 0) {
@@ -88,6 +106,16 @@ export default function QuestionModal({
 
   const handleCorrect = () => {
     const points = DIFFICULTIES.find((d) => d.level === difficulty)?.points || 1;
+    
+    // Add question to used questions list
+    if (category && difficulty && question) {
+      addUsedQuestion({
+        category: category.name,
+        difficulty,
+        question: question.question,
+      });
+    }
+    
     updateScore(
       useGameStore.getState().teams[useGameStore.getState().activeTeamIndex].id,
       points
@@ -97,6 +125,15 @@ export default function QuestionModal({
   };
 
   const handleIncorrect = () => {
+    // Add question to used questions list even if incorrect
+    if (category && difficulty && question) {
+      addUsedQuestion({
+        category: category.name,
+        difficulty,
+        question: question.question,
+      });
+    }
+    
     onOpenChange(false);
     nextTeam();
   };

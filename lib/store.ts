@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { GameState, Team } from './types';
+import { GameState, Team, UsedQuestion } from './types';
 import { DEFAULT_WINNING_SCORE } from './constants';
 
 interface GameStore extends GameState {
@@ -8,6 +8,8 @@ interface GameStore extends GameState {
   updateScore: (teamId: string, points: number) => void;
   nextTeam: () => void;
   resetGame: () => void;
+  addUsedQuestion: (question: UsedQuestion) => void;
+  isQuestionUsed: (category: string, difficulty: string, question: string) => boolean;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -17,6 +19,7 @@ export const useGameStore = create<GameStore>()(
       activeTeamIndex: 0,
       winningScore: DEFAULT_WINNING_SCORE,
       isGameStarted: false,
+      usedQuestions: [],
 
       initializeGame: (teams, winningScore) =>
         set({
@@ -24,6 +27,7 @@ export const useGameStore = create<GameStore>()(
           winningScore,
           isGameStarted: true,
           activeTeamIndex: 0,
+          usedQuestions: [], // Reset used questions when starting new game
         }),
 
       updateScore: (teamId, points) =>
@@ -47,7 +51,23 @@ export const useGameStore = create<GameStore>()(
           activeTeamIndex: 0,
           winningScore: DEFAULT_WINNING_SCORE,
           isGameStarted: false,
+          usedQuestions: [], // Clear used questions on reset
         }),
+
+      addUsedQuestion: (question: UsedQuestion) =>
+        set((state) => ({
+          usedQuestions: [...state.usedQuestions, question],
+        })),
+
+      isQuestionUsed: (category: string, difficulty: string, question: string) => {
+        const state = get();
+        return state.usedQuestions.some(
+          (q) =>
+            q.category === category &&
+            q.difficulty === difficulty &&
+            q.question === question
+        );
+      },
     }),
     {
       name: 'trivia-game-storage',

@@ -6,11 +6,18 @@ export interface Team {
   score: number;
 }
 
+export interface UsedQuestion {
+  category: string;
+  difficulty: string;
+  question: string;
+}
+
 export interface GameState {
   teams: Team[];
   activeTeamIndex: number;
   winningScore: number;
   isGameStarted: boolean;
+  usedQuestions: UsedQuestion[];
 }
 
 export interface Question {

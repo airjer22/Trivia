@@ -12,12 +12,23 @@ export async function generateQuestion(category: string, difficulty: string) {
       apiKey,
     });
 
+    // Map difficulty to age range
+    const difficultyMap = {
+      easy: "under 10 years old",
+      hard: "10-15 years old",
+      expert: "15-19 years old"
+    };
+
+    const ageRange = difficultyMap[difficulty as keyof typeof difficultyMap];
+
     const response = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       messages: [{
         role: 'user',
-        content: `Generate a single trivia question for the category "${category}" at ${difficulty} difficulty level.
+        content: `Generate a single trivia question for the category "${category}" appropriate for students ${ageRange}.
+
+The question should be engaging and educational, matching the cognitive and knowledge level of ${ageRange} students.
 
 Return only a JSON object with these exact fields:
 {
@@ -26,7 +37,10 @@ Return only a JSON object with these exact fields:
   "explanation": "brief explanation of the answer"
 }
 
-Make sure the question is challenging but appropriate for the ${difficulty} difficulty level.`
+Guidelines for age-appropriate questions:
+- Under 10: Simple vocabulary, concrete concepts, familiar topics
+- 10-15: More complex concepts, requires some critical thinking
+- 15-19: Advanced topics, requires deeper understanding and analysis`
       }],
       temperature: 0.8,
     });
